@@ -3,7 +3,10 @@
 做了两个星期了，网上的unet没有几个是对的，自己改了下，保证可以收敛出结果。\n
 
 1.预处理，将天池数据train数据和val数据提取到同一个文件夹中\n
+
 2.运行train_dataset_preprocessing_2DUnet.py和val_dataset_preprocessing_2DUnet.py\n
+
 3.运行deep_learning_2DUnet.py\n
+
 
 持续更新中。。。
