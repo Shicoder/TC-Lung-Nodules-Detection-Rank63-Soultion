@@ -1,15 +1,6 @@
-#!/usr/bin/env python
+
 # encoding: utf-8
 
-
-"""
-@version: python 2.7
-@author: Jeniffer Wu
-@license: Apache Licence 
-@contact: yywu@szucla.org
-@file: test_dataset_preprocessing_2DUnet.py
-@time: 2017/6/30 12:24
-"""
 from __future__ import print_function, division
 import SimpleITK as sitk
 import math
@@ -27,17 +18,6 @@ try:
 except:
     print('tqdm 是一个轻量级的进度条小包。。。')
     tqdm = lambda x: x
-
-# subset = "val_subset_all/"
-# subset = "data_set/"
-# tianchi_path = "/media/ucla/32CC72BACC727845/tianchi/"
-# tianchi_path = "/home/jenifferwu/LUNA2016/"
-# tianchi_subset_path = tianchi_path + subset
-
-# out_subset = "nerve-mine-2D"
-# output_path = "/home/ucla/Downloads/tianchi-2D/"
-# output_path = "/home/jenifferwu/IMAGE_MASKS_DATA/"
-
 
 subset = "val_subset_all/"
 tianchi_path = "D:\Shi\python\TMCI\pulmonary-nodules-segmentation-master/data/"
@@ -109,9 +89,6 @@ class Alibaba_tianchi(object):
         z轴在真实世界中的位置，单位为mm
         '''
         mask = np.zeros([height, width])
-        # mask中除了结节的区域，其他都是0
-        # 从世界坐标装换为体素空间
-        # 定义结节所在的体素范围
         v_center = (center - origin) / spacing
         v_diam = int(diam / spacing[0] + 5)
         v_xmin = np.max([0, int(v_center[0] - v_diam) - 5])
@@ -120,8 +97,6 @@ class Alibaba_tianchi(object):
         v_ymax = np.min([height - 1, int(v_center[1] + v_diam) + 5])
         v_xrange = range(v_xmin, v_xmax + 1)
         v_yrange = range(v_ymin, v_ymax + 1)
-        # Convert back to world coordinates for distance calculation
-        # Fill in 1 within sphere around nodule
         for v_x in v_xrange:
             for v_y in v_yrange:
                 p_x = spacing[0] * v_x + origin[0]
@@ -176,7 +151,6 @@ class Alibaba_tianchi(object):
                     slice = img_array[i_z]
                     slice = scipy.ndimage.interpolation.zoom(slice, [1.0, 1.0], mode='nearest')
                     slice = 255.0 * self.normalize(slice)
-                    # slice = resize(slice,[512,512])
                     slice = slice.astype(np.uint8)  # ---因为int16有点大，我们改成了uint8图（值域0~255）
 
                     out_images.append(slice)
@@ -196,9 +170,9 @@ class Alibaba_tianchi(object):
                     cv2.imwrite(os.path.join(self.tmp_jpg_workspace, "masks_%s_%04d_%04d_%04d_o.jpg" % (cur_row["seriesuid"], fcount, node_idx, i_z)), nodule_mask)
 
         num_images = len(out_images)
-        #
+        
         #  Writing out images and masks as 1 channel arrays for input into network
-        #
+        
         final_images = np.ndarray([num_images, 1, 512, 512], dtype=np.float32)
         final_masks = np.ndarray([num_images, 1, 512, 512], dtype=np.float32)
         for i in range(num_images):
@@ -206,8 +180,6 @@ class Alibaba_tianchi(object):
             final_masks[i, 0] = out_nodemasks[i]
 
         rand_i = np.random.choice(range(num_images), size=num_images, replace=False)
-        # val_i = int(0.2*num_images)
-
         np.save(os.path.join(self.tmp_workspace, "valImages.npy"), final_images[rand_i[:]])
         np.save(os.path.join(self.tmp_workspace, "valMasks.npy"), final_masks[rand_i[:]])
 
