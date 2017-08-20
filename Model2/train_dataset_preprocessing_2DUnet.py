@@ -1,15 +1,5 @@
-#!/usr/bin/env python
 # encoding: utf-8
 
-
-"""
-@version: python 2.7
-@author: Jeniffer Wu
-@license: Apache Licence 
-@contact: yywu@szucla.org
-@file: train_dataset_preprocessing_2DUnet.py
-@time: 2017/6/30 12:24
-"""
 from __future__ import print_function, division
 import SimpleITK as sitk
 import math
@@ -26,18 +16,6 @@ try:
 except:
     print('tqdm 是一个轻量级的进度条小包。。。')
     tqdm = lambda x: x
-
-
-# subset = "val_subset_all/"
-# subset = "data_set/"
-# tianchi_path = "/media/ucla/32CC72BACC727845/tianchi/"
-# tianchi_path = "/home/jenifferwu/LUNA2016/"
-# tianchi_subset_path = tianchi_path + subset
-
-
-# out_subset = "nerve-mine-2D"
-# output_path = "/home/ucla/Downloads/tianchi-2D/"
-# output_path = "/home/jenifferwu/IMAGE_MASKS_DATA/" + out_subset
 
 subset = "train_subset_all/"
 tianchi_path = "D:\Shi\python\TMCI\pulmonary-nodules-segmentation-master/data/"
@@ -154,21 +132,11 @@ class Alibaba_tianchi(object):
                     w_nodule_center = np.array([node_x, node_y, node_z])  # 世界空间中结节中心的坐标
                     v_nodule_center = np.rint(
                         (w_nodule_center - origin) / spacing)  # 体素空间中结节中心的坐标 (still x,y,z ordering)
-                    # np.rint 对浮点数取整，但不改变浮点数类型
-                    # for i, i_z in enumerate(np.arange(int(v_nodule_center[2]) - 1,int(v_nodule_center[2]) + 2).clip(0,num_z - 1)):  # clip 方法的作用是防止超出切片数量的范围
                     i_z = int(v_nodule_center[2])
                     nodule_mask = self.make_mask(w_nodule_center, diam, i_z * spacing[2] + origin[2], width, height,
                                                  spacing, origin)
-                    # print(nodule_mask)
-
 
                     nodule_mask = scipy.ndimage.interpolation.zoom(nodule_mask, [1.0, 1.0], mode='nearest')
-                    # import matplotlib.pyplot as plt
-                    # fig,ax = plt.subplots(2,2,figsize=[8,8])
-                    # ax[0,0].imshow(nodule_mask,cmap='gray')
-                    # ax[0,1].imshow(nodule_mask,cmap='gray')
-                    # ax[1,0].imshow(nodule_mask,cmap='gray')
-                    # plt.show()
                     nodule_mask[nodule_mask < 0.9] = 0
                     nodule_mask[nodule_mask > 0.9] = 1
 
@@ -180,22 +148,14 @@ class Alibaba_tianchi(object):
                     # slice = 510.0 * self.normalize(slice)
                     slice = 255.0 * self.normalize(slice)
                     print(np.max(slice))
-                    slice = slice.astype(np.uint8)  # ---因为int16有点大，我们改成了uint8图（值域0~255）
-                    # slice = resize(slice,[512,512])##############################################################
+                    slice = slice.astype(np.uint8)  
+                    # slice = resize(slice,[512,512])
                     cv2.imwrite(os.path.join(self.tmp_jpg_workspace, "images_a_%s_%04d_%04d_%04d.jpg" % (cur_row["seriesuid"],
                         fcount, node_idx, i_z)), slice)
                     # nodule_mask = 510.0 * nodule_mask
                     nodule_mask = 255.0 * nodule_mask
                     nodule_mask = nodule_mask.astype(np.uint8)
                     print(np.max(nodule_mask))
-                    # nodule_mask = resize(nodule_mask,[512,512])##################################################
-                    # print(np.max(nodule_mask))
-                    # import matplotlib.pyplot as plt
-                    # fig,ax = plt.subplots(2,2,figsize=[8,8])
-                    # ax[0,0].imshow(nodule_mask,cmap='gray')
-                    # ax[0,1].imshow(nodule_mask,cmap='gray')
-                    # ax[1,0].imshow(nodule_mask,cmap='gray')
-                    # plt.show()
                     out_images.append(slice)
                     out_nodemasks.append(nodule_mask)
 
@@ -229,27 +189,6 @@ class Alibaba_tianchi(object):
         np.save(os.path.join(self.tmp_workspace, "trainImages.npy"), final_images[rand_i[:]])
         np.save(os.path.join(self.tmp_workspace, "trainMasks.npy"), final_masks[rand_i[:]])
 
-        '''
-        np.save(os.path.join(self.tmp_workspace, "valImages.npy"), final_images[rand_i[:]])
-        np.save(os.path.join(self.tmp_workspace, "valMasks.npy"), final_masks[rand_i[:]])
-
-        csv_row("index", "seriesuid", "pred_image")
-        for i in range(num_images):
-            index = rand_i[i]
-            seriesuid = seriesuids[index]
-            imgs_mask_val = 'imgs_mask_val_%04d.npy' % (i)
-            csv_row(index, seriesuid, imgs_mask_val)
-
-        # Write out the imgs_mask_val_coordinate CSV file.
-        pred_image_file = "seriesuid_pred_image.csv"
-        print(os.path.join(output_path, pred_image_file))
-        csvFileObj = open(os.path.join(output_path, pred_image_file), 'w')
-        csvWriter = csv.writer(csvFileObj)
-        for row in csvRows:
-            # print row
-            csvWriter.writerow(row)
-        csvFileObj.close()
-        '''
 
 
 if __name__ == '__main__':
